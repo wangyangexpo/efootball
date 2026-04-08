@@ -21,7 +21,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    private static final String MANAGE_PASSWORD = "wangyangexpo";
+    // 密码的 MD5 值
+    private static final String PASSWORD_MD5 = "6b09e658e9143361008d26983cc738ec";
 
     @Autowired
     private PlayerCreateExe playerCreateExe;
@@ -55,8 +56,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Response<PlayerDTO> create(PlayerCreateRequest request) {
-        // Validate password
-        if (!MANAGE_PASSWORD.equals(request.getPassword())) {
+        // Validate password - 使用 MD5 验证
+        if (!PASSWORD_MD5.equals(request.getPassword())) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
 
@@ -66,8 +67,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Response<PlayerDTO> update(Long id, PlayerUpdateRequest request) {
-        // Validate password
-        if (!MANAGE_PASSWORD.equals(request.getPassword())) {
+        // Validate password - 使用 MD5 验证
+        if (!PASSWORD_MD5.equals(request.getPassword())) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
 
@@ -81,8 +82,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Response<Void> delete(Long id, String password) {
-        // Validate password
-        if (!MANAGE_PASSWORD.equals(password)) {
+        // Validate password - 使用 MD5 验证
+        if (!PASSWORD_MD5.equals(password)) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
 

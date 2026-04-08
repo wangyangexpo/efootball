@@ -4,7 +4,7 @@ import { getPlayerEnums, extractData } from "../api/player";
 
 const { Option } = Select;
 
-const FilterPanel = ({ filters, onFilterChange }) => {
+const FilterPanel = ({ onFilterChange, total }) => {
   const [form] = Form.useForm();
   const [enums, setEnums] = useState({});
   const [loading, setLoading] = useState(true);
@@ -200,9 +200,14 @@ const FilterPanel = ({ filters, onFilterChange }) => {
 
           <Col xs={24} sm={24} md={24} lg={6}>
             <Form.Item label=" ">
-              <Button type="primary" danger onClick={handleReset} block>
-                重置筛选
-              </Button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <Button type="primary" danger onClick={handleReset}>
+                  重置筛选
+                </Button>
+                <span style={{ fontSize: 14, color: '#666' }}>
+                  共 <strong style={{ color: '#667eea', fontSize: 16 }}>{total || 0}</strong> 名球员
+                </span>
+              </div>
             </Form.Item>
           </Col>
         </Row>

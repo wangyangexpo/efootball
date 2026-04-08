@@ -35,6 +35,16 @@ public class PlayerQueryExe {
     public PageResult<PlayerDTO> list(PlayerQueryRequest request) {
         LambdaQueryWrapper<PlayerEntity> wrapper = new LambdaQueryWrapper<>();
 
+        // ID精确查询
+        if (request.getId() != null) {
+            wrapper.eq(PlayerEntity::getId, request.getId());
+        }
+
+        // 姓名模糊查询
+        if (request.getName() != null && !request.getName().isEmpty()) {
+            wrapper.like(PlayerEntity::getName, request.getName());
+        }
+
         // Filter conditions
         if (request.getPosition() != null) {
             wrapper.eq(PlayerEntity::getPosition, request.getPosition());

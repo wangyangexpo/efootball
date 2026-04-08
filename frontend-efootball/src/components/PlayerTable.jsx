@@ -106,7 +106,6 @@ const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
     pageSize: pagination.pageSize || 20,
     total: pagination.total || 0,
     showSizeChanger: true,
-    showTotal: (total) => `共 ${total} 名球员`,
     position: ['bottomCenter']
   } : false;
 

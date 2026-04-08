@@ -11,6 +11,12 @@ public class PlayerQueryRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    // 球员ID（精确匹配）
+    private Long id;
+
+    // 球员姓名（模糊匹配）
+    private String name;
+
     // 球员位置
     private String position;
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table,
   Button,
@@ -10,9 +10,11 @@ import {
   Select,
   message,
   Popconfirm,
-  Tag
+  Tag,
+  Row,
+  Col
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getPlayers, getPlayerEnums, createPlayer, updatePlayer, deletePlayer, extractData } from '../api/player';
 
 const { Option } = Select;
@@ -25,6 +27,9 @@ const PlayerManage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
+  const [filters, setFilters] = useState({});
+  const [hasSearched, setHasSearched] = useState(false);
 
   // 加载枚举
   useEffect(() => {
@@ -32,9 +37,35 @@ const PlayerManage = () => {
   }, []);
 
   // 加载球员列表
+  const loadPlayers = useCallback(async () => {
+    if (!hasSearched) return;
+    setLoading(true);
+    try {
+      const params = {
+        ...filters,
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize
+      };
+      // 移除 undefined 值
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === null || params[key] === '') {
+          delete params[key];
+        }
+      });
+
+      const response = await getPlayers(params);
+      const data = extractData(response);
+      setPlayers(data.list || []);
+      setPagination(prev => ({ ...prev, total: data.total }));
+    } catch (error) {
+      message.error('加载球员列表失败');
+    }
+    setLoading(false);
+  }, [filters, pagination.current, pagination.pageSize, hasSearched]);
+
   useEffect(() => {
     loadPlayers();
-  }, [pagination.current, pagination.pageSize]);
+  }, [loadPlayers]);
 
   const loadEnums = async () => {
     try {
@@ -45,28 +76,27 @@ const PlayerManage = () => {
     }
   };
 
-  const loadPlayers = async () => {
-    setLoading(true);
-    try {
-      const response = await getPlayers({
-        pageNum: pagination.current,
-        pageSize: pagination.pageSize
-      });
-      const data = extractData(response);
-      setPlayers(data.records || []);
-      setPagination({ ...pagination, total: data.total });
-    } catch (error) {
-      message.error('加载球员列表失败');
-    }
-    setLoading(false);
-  };
-
   const handleTableChange = (newPagination) => {
     setPagination({
       ...pagination,
       current: newPagination.current,
       pageSize: newPagination.pageSize
     });
+  };
+
+  const handleFilterChange = () => {
+    const values = filterForm.getFieldsValue();
+    setFilters(values);
+    setHasSearched(true);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handleResetFilter = () => {
+    filterForm.resetFields();
+    setFilters({});
+    setHasSearched(false);
+    setPlayers([]);
+    setPagination(prev => ({ ...prev, current: 1, total: 0 }));
   };
 
   const handleAdd = () => {
@@ -207,10 +237,34 @@ const PlayerManage = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          新增球员
-        </Button>
+      {/* 筛选区域 */}
+      <div style={{
+        background: '#fff',
+        padding: 16,
+        marginBottom: 16,
+        borderRadius: 8
+      }}>
+        <Form form={filterForm} layout="inline">
+          <Form.Item name="id" style={{ marginBottom: 8 }}>
+            <InputNumber placeholder="球员ID" min={1} style={{ width: 120 }} />
+          </Form.Item>
+          <Form.Item name="name" style={{ marginBottom: 8 }}>
+            <Input placeholder="球员姓名" allowClear style={{ width: 140 }} />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 8 }}>
+            <Space>
+              <Button type="primary" icon={<SearchOutlined />} onClick={handleFilterChange}>
+                查询
+              </Button>
+              <Button icon={<ReloadOutlined />} onClick={handleResetFilter}>
+                重置
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                新增
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </div>
 
       <Table
@@ -228,84 +282,109 @@ const PlayerManage = () => {
         title={editingPlayer ? '修改球员' : '新增球员'}
         onCancel={() => setModalOpen(false)}
         onOk={handleSubmit}
-        width={600}
+        width={800}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="球员姓名"
-            rules={[{ required: true, message: '请输入球员姓名' }]}
-          >
-            <Input placeholder="请输入球员姓名" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="球员姓名"
+                rules={[{ required: true, message: '请输入球员姓名' }]}
+              >
+                <Input placeholder="请输入球员姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="position"
+                label="位置"
+                rules={[{ required: true, message: '请选择位置' }]}
+              >
+                <Select placeholder="请选择位置" showSearch>
+                  {(enums.positions || []).map(pos => (
+                    <Option key={pos} value={pos}>{pos}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            name="position"
-            label="位置"
-            rules={[{ required: true, message: '请选择位置' }]}
-          >
-            <Select placeholder="请选择位置" showSearch>
-              {(enums.positions || []).map(pos => (
-                <Option key={pos} value={pos}>{pos}</Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="现役状态"
+                rules={[{ required: true, message: '请选择状态' }]}
+              >
+                <Select placeholder="请选择状态">
+                  {(enums.statuses || []).map(s => (
+                    <Option key={s} value={s}>{s}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="number" label="球衣号码" rules={[{ required: true, message: '请输入球衣号码' }]}>
+                <InputNumber min={1} max={99} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            name="status"
-            label="现役状态"
-            rules={[{ required: true, message: '请选择状态' }]}
-          >
-            <Select placeholder="请选择状态">
-              {(enums.statuses || []).map(s => (
-                <Option key={s} value={s}>{s}</Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="club" label="俱乐部" rules={[{ required: true, message: '请选择俱乐部' }]}>
+                <Select placeholder="请选择俱乐部" showSearch allowClear>
+                  {(enums.clubs || []).map(c => (
+                    <Option key={c} value={c}>{c}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="league" label="联赛" rules={[{ required: true, message: '请选择联赛' }]}>
+                <Select placeholder="请选择联赛" showSearch allowClear>
+                  {(enums.leagues || []).map(l => (
+                    <Option key={l} value={l}>{l}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item name="number" label="球衣号码">
-            <InputNumber min={1} max={99} style={{ width: '100%' }} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="country" label="国家队" rules={[{ required: true, message: '请选择国家队' }]}>
+                <Select placeholder="请选择国家队" showSearch allowClear>
+                  {(enums.countries || []).map(c => (
+                    <Option key={c} value={c}>{c}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="height" label="身高(cm)" rules={[{ required: true, message: '请输入身高' }]}>
+                <InputNumber min={150} max={220} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item name="club" label="俱乐部">
-            <Select placeholder="请选择俱乐部" showSearch allowClear>
-              {(enums.clubs || []).map(c => (
-                <Option key={c} value={c}>{c}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="league" label="联赛">
-            <Select placeholder="请选择联赛" showSearch allowClear>
-              {(enums.leagues || []).map(l => (
-                <Option key={l} value={l}>{l}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="country" label="国家队">
-            <Select placeholder="请选择国家队" showSearch allowClear>
-              {(enums.countries || []).map(c => (
-                <Option key={c} value={c}>{c}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="height" label="身高(cm)">
-            <InputNumber min={150} max={220} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item name="foot" label="惯用脚">
-            <Select placeholder="请选择惯用脚" allowClear>
-              {(enums.foots || []).map(f => (
-                <Option key={f} value={f}>{f}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="cardImage" label="卡面图片URL">
-            <Input placeholder="请输入图片URL地址" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="foot" label="惯用脚" rules={[{ required: true, message: '请选择惯用脚' }]}>
+                <Select placeholder="请选择惯用脚" allowClear>
+                  {(enums.foots || []).map(f => (
+                    <Option key={f} value={f}>{f}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="cardImage" label="卡面图片URL">
+                <Input placeholder="请输入图片URL地址" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>

@@ -19,6 +19,7 @@ INSERT INTO user (username, email, status) VALUES ('demo_user', 'demo@example.co
 INSERT INTO user (username, email, status) VALUES ('test_user', 'test@example.com', 1);
 
 -- Create player table
+DROP TABLE IF EXISTS player;
 CREATE TABLE IF NOT EXISTS player (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
     name VARCHAR(100) NOT NULL COMMENT '球员姓名',
