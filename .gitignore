@@ -3,3 +3,14 @@ node_modules/
 *.zip
 dist/
 build/
+
+# Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/

@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { Layout, Typography, Space, FloatButton, Popover } from 'antd';
-import { MessageOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Layout, Typography, Space, Button, FloatButton, Popover, message } from 'antd';
+import { MessageOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import FilterPanel from './components/FilterPanel';
 import PlayerTable from './components/PlayerTable';
-import playersData from './data/players.json';
+import PasswordModal from './components/PasswordModal';
+import PlayerManage from './pages/PlayerManage';
+import { getPlayers, extractData } from './api/player';
 import qrcodeImage from './assets/douyin.jpeg';
 import './App.css';
 
@@ -11,6 +13,12 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('main');
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    sessionStorage.getItem('playerManageAuth') === 'true'
+  );
+
+  // 主页面状态
   const [filters, setFilters] = useState({
     position: undefined,
     status: undefined,
@@ -22,72 +30,77 @@ function App() {
     height: undefined,
     heightOperator: '='
   });
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
 
-  // 筛选逻辑
-  const filteredPlayers = useMemo(() => {
-    let result = playersData.players;
+  // 加载球员数据
+  const loadPlayers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {
+        ...filters,
+        pageNum: pagination.current,
+        pageSize: pagination.pageSize
+      };
+      // 移除 undefined 值
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === null) {
+          delete params[key];
+        }
+      });
 
-    // 球员位置筛选
-    if (filters.position) {
-      result = result.filter(player => player.position === filters.position);
+      const response = await getPlayers(params);
+      const data = extractData(response);
+      setPlayers(data.records || []);
+      setPagination(prev => ({ ...prev, total: data.total }));
+    } catch (error) {
+      message.error('加载球员数据失败');
     }
+    setLoading(false);
+  }, [filters, pagination.current, pagination.pageSize]);
 
-    // 现役状态筛选
-    if (filters.status) {
-      result = result.filter(player => player.status === filters.status);
+  useEffect(() => {
+    if (currentPage === 'main') {
+      loadPlayers();
     }
+  }, [currentPage, loadPlayers]);
 
-    // 球衣号码筛选
-    if (filters.number !== undefined && filters.number !== null) {
-      result = result.filter(player => player.number === filters.number);
-    }
-
-    // 联赛筛选
-    if (filters.league) {
-      result = result.filter(player => player.league === filters.league);
-    }
-
-    // 俱乐部筛选
-    if (filters.club) {
-      result = result.filter(player => player.club === filters.club);
-    }
-
-    // 国家队筛选
-    if (filters.country) {
-      result = result.filter(player => player.country === filters.country);
-    }
-
-    // 惯用脚筛选
-    if (filters.foot) {
-      result = result.filter(player => player.foot === filters.foot);
-    }
-
-    // 身高筛选
-    if (filters.height) {
-      const height = filters.height;
-      const operator = filters.heightOperator;
-
-      if (operator === '=') {
-        result = result.filter(player => player.height === height);
-      } else if (operator === '+') {
-        result = result.filter(player => player.height > height);
-      } else if (operator === '-') {
-        result = result.filter(player => player.height < height);
-      }
-    }
-
-    return result;
-  }, [filters]);
-
+  // 筛选条件变化
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
+    setPagination(prev => ({ ...prev, current: 1 })); // 重置到第一页
+  };
+
+  // 分页变化
+  const handlePageChange = (newPagination) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+      total: pagination.total
+    });
+  };
+
+  // 页面切换
+  const handlePageSwitch = (page) => {
+    setCurrentPage(page);
+  };
+
+  // 密码验证成功
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
+  // 返回主页面
+  const handleBackToMain = () => {
+    setCurrentPage('main');
   };
 
   const feedbackContent = (
     <div style={{ textAlign: 'center' }}>
-      <img 
-        src={qrcodeImage} 
-        alt="反馈二维码" 
+      <img
+        src={qrcodeImage}
+        alt="反馈二维码"
         style={{ width: 200, height: 'auto', marginBottom: 8 }}
       />
       <div style={{ fontSize: 12, color: '#666' }}>
@@ -98,43 +111,79 @@ function App() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      <Header style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         padding: '0 50px',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
         <Space>
           <Title level={3} style={{ color: '#fff', margin: 0 }}>
             ⚽ 实况足球球员筛选系统
           </Title>
         </Space>
+        <Space>
+          <Button
+            type={currentPage === 'main' ? 'primary' : 'default'}
+            icon={<SearchOutlined />}
+            onClick={() => handlePageSwitch('main')}
+          >
+            球员查询
+          </Button>
+          <Button
+            type={currentPage === 'manage' ? 'primary' : 'default'}
+            icon={<SettingOutlined />}
+            onClick={() => handlePageSwitch('manage')}
+          >
+            球员管理
+          </Button>
+        </Space>
       </Header>
+
       <Content style={{ padding: '24px 50px' }}>
-        <FilterPanel 
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          enums={playersData.enums}
-        />
-        <PlayerTable 
-          players={filteredPlayers}
-          loading={false}
-        />
+        {currentPage === 'main' && (
+          <>
+            <FilterPanel
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
+            <PlayerTable
+              players={players}
+              loading={loading}
+              pagination={pagination}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
+
+        {currentPage === 'manage' && (
+          isAuthenticated ? (
+            <PlayerManage />
+          ) : (
+            <PasswordModal
+              onSuccess={handleAuthSuccess}
+              onCancel={handleBackToMain}
+            />
+          )
+        )}
       </Content>
-      
-      <Popover 
-        content={feedbackContent} 
-        title="问题反馈"
-        trigger="hover"
-        placement="leftBottom"
-      >
-        <FloatButton 
-          icon={<MessageOutlined />}
-          type="primary"
-          style={{ right: 24, bottom: 24 }}
-          tooltip="反馈问题"
-        />
-      </Popover>
+
+      {currentPage === 'main' && (
+        <Popover
+          content={feedbackContent}
+          title="问题反馈"
+          trigger="hover"
+          placement="leftBottom"
+        >
+          <FloatButton
+            icon={<MessageOutlined />}
+            type="primary"
+            style={{ right: 24, bottom: 24 }}
+            tooltip="反馈问题"
+          />
+        </Popover>
+      )}
     </Layout>
   );
 }

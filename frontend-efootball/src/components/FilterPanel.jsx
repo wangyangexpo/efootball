@@ -1,10 +1,27 @@
-import React from "react";
-import { Form, Select, InputNumber, Radio, Row, Col, Button } from "antd";
+import React, { useEffect, useState } from "react";
+import { Form, Select, InputNumber, Radio, Row, Col, Button, Spin } from "antd";
+import { getPlayerEnums, extractData } from "../api/player";
 
 const { Option } = Select;
 
-const FilterPanel = ({ filters, onFilterChange, enums }) => {
+const FilterPanel = ({ filters, onFilterChange }) => {
   const [form] = Form.useForm();
+  const [enums, setEnums] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadEnums();
+  }, []);
+
+  const loadEnums = async () => {
+    try {
+      const response = await getPlayerEnums();
+      setEnums(extractData(response));
+    } catch (error) {
+      console.error('加载枚举失败', error);
+    }
+    setLoading(false);
+  };
 
   const handleValuesChange = (changedValues, allValues) => {
     onFilterChange(allValues);
@@ -24,6 +41,14 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
       heightOperator: "=",
     });
   };
+
+  if (loading) {
+    return (
+      <div style={{ background: "#fff", padding: "24px", textAlign: "center" }}>
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -54,7 +79,7 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
                 showSearch
                 optionFilterProp="children"
               >
-                {enums.positions.map((pos) => (
+                {(enums.positions || []).map((pos) => (
                   <Option key={pos} value={pos}>
                     {pos}
                   </Option>
@@ -66,8 +91,11 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
           <Col xs={24} sm={12} md={8} lg={6}>
             <Form.Item label="是否现役" name="status">
               <Select placeholder="请选择状态" allowClear>
-                <Option value="现役">现役</Option>
-                <Option value="历史">历史</Option>
+                {(enums.statuses || []).map((s) => (
+                  <Option key={s} value={s}>
+                    {s}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -92,13 +120,11 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
                 showSearch
                 optionFilterProp="children"
               >
-                {enums.leagues
-                  .filter((league) => league)
-                  .map((league) => (
-                    <Option key={league} value={league}>
-                      {league}
-                    </Option>
-                  ))}
+                {(enums.leagues || []).map((league) => (
+                  <Option key={league} value={league}>
+                    {league}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -111,7 +137,7 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
                 showSearch
                 optionFilterProp="children"
               >
-                {enums.clubs.map((club) => (
+                {(enums.clubs || []).map((club) => (
                   <Option key={club} value={club}>
                     {club}
                   </Option>
@@ -128,7 +154,7 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
                 showSearch
                 optionFilterProp="children"
               >
-                {enums.countries.map((country) => (
+                {(enums.countries || []).map((country) => (
                   <Option key={country} value={country}>
                     {country}
                   </Option>
@@ -163,8 +189,11 @@ const FilterPanel = ({ filters, onFilterChange, enums }) => {
           <Col xs={24} sm={12} md={8} lg={6}>
             <Form.Item label="惯用脚" name="foot">
               <Select placeholder="请选择惯用脚" allowClear>
-                <Option value="左">左</Option>
-                <Option value="右">右</Option>
+                {(enums.foots || []).map((foot) => (
+                  <Option key={foot} value={foot}>
+                    {foot}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>

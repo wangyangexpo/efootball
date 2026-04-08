@@ -1,7 +1,7 @@
 import React from 'react';
-import { Table, Tag } from 'antd';
+import { Table, Tag, Image } from 'antd';
 
-const PlayerTable = ({ players, loading }) => {
+const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
   const columns = [
     {
       title: '姓名',
@@ -77,7 +77,7 @@ const PlayerTable = ({ players, loading }) => {
       key: 'height',
       width: 100,
       align: 'center',
-      sorter: (a, b) => a.height - b.height
+      sorter: true
     },
     {
       title: '惯用脚',
@@ -88,12 +88,31 @@ const PlayerTable = ({ players, loading }) => {
       render: (foot) => (
         <Tag color={foot === '左' ? '#667eea' : '#10b981'}>{foot}</Tag>
       )
+    },
+    {
+      title: '卡面',
+      dataIndex: 'cardImage',
+      key: 'cardImage',
+      width: 100,
+      align: 'center',
+      render: (url) => url ? (
+        <Image src={url} width={60} height={80} style={{ objectFit: 'cover' }} />
+      ) : null
     }
   ];
 
+  const tablePagination = pagination ? {
+    current: pagination.current || 1,
+    pageSize: pagination.pageSize || 20,
+    total: pagination.total || 0,
+    showSizeChanger: true,
+    showTotal: (total) => `共 ${total} 名球员`,
+    position: ['bottomCenter']
+  } : false;
+
   return (
-    <div style={{ 
-      background: '#fff', 
+    <div style={{
+      background: '#fff',
       padding: '24px',
       borderRadius: '12px',
       boxShadow: '0 4px 12px rgba(102, 126, 234, 0.08), 0 2px 6px rgba(102, 126, 234, 0.04)',
@@ -102,14 +121,10 @@ const PlayerTable = ({ players, loading }) => {
       <Table
         columns={columns}
         dataSource={players}
-        rowKey={(record, index) => `${record.name}-${index}`}
+        rowKey="id"
         loading={loading}
-        pagination={{
-          pageSize: 20,
-          showSizeChanger: false,
-          showTotal: (total) => `共 ${total} 名球员`,
-          position: ['bottomCenter']
-        }}
+        pagination={tablePagination}
+        onChange={(newPagination) => onPageChange && onPageChange(newPagination)}
         scroll={{ x: 1200 }}
       />
     </div>
