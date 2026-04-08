@@ -1,4 +1,11 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: demo-redis
+    ports:
+      - "6379:6379"
+    restart: on-failure
+
   mysql:
     image: mysql:8.0
     container_name: demo-mysql
@@ -10,7 +17,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --character-set-client-handshake=FALSE
 
   app:
     image: crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/springboot-demo:latest
@@ -23,8 +30,10 @@ services:
       DB_USER: root
       DB_PASS: root
       SPRING_PROFILES_ACTIVE: dev
+      REDIS_HOST: redis
     depends_on:
       - mysql
+      - redis
     restart: on-failure
 
 volumes:

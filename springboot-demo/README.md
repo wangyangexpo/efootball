@@ -95,20 +95,35 @@ docker buildx build \
 
 ## 阿里云服务器重新部署
 
-### SSH 登录服务器
+### 首次部署：拷贝配置文件到服务器
 
 ```bash
-ssh root@你的服务器IP
+# 创建目录
+ssh wangyangexpo@139.224.252.176 "mkdir -p /home/wangyangexpo/springboot-demo/sql"
+
+# 拷贝 docker-compose 生产配置
+scp /Users/alsc/Documents/shared/fullstack/springboot-demo/docker-compose.prod.yml wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/docker-compose.yml
+
+# 拷贝数据库初始化 SQL
+scp /Users/alsc/Documents/shared/fullstack/springboot-demo/sql/init.sql wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/sql/init.sql
 ```
 
+### 更新 SQL 文件到服务器（改了 init.sql 后执行）
+
+```bash
+scp /Users/alsc/Documents/shared/fullstack/springboot-demo/sql/init.sql wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/sql/init.sql
+```
 ### 在服务器上拉取最新镜像并重启
 
 ```bash
+# 重新导入数据库
+docker exec -i demo-mysql mysql -uroot -proot springboot_demo < sql/init.sql
+
 # 拉取最新镜像
-sudo docker compose -f /home/root/springboot-demo/docker-compose.yml pull app
+docker compose pull app
 
 # 重启 app 容器
-sudo docker compose -f /home/root/springboot-demo/docker-compose.yml up -d app
+docker compose up -d app
 ```
 
 ### 查看服务器上的 app 日志
@@ -128,13 +143,13 @@ chmod +x deploy.sh
 
 ## API Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /api/users | Create user |
-| GET | /api/users/{id} | Get user by ID |
-| PUT | /api/users/{id} | Update user |
-| DELETE | /api/users/{id} | Delete user |
-| GET | /api/users | List users (paginated) |
+| Method | Path            | Description            |
+| ------ | --------------- | ---------------------- |
+| POST   | /api/users      | Create user            |
+| GET    | /api/users/{id} | Get user by ID         |
+| PUT    | /api/users/{id} | Update user            |
+| DELETE | /api/users/{id} | Delete user            |
+| GET    | /api/users      | List users (paginated) |
 
 ## License
 
