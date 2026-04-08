@@ -20,7 +20,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --character-set-client-handshake=FALSE
 
   app:
-    image: crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/springboot-demo:latest
+    image: crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/docker:latest
     container_name: demo-app
     ports:
       - "8080:8080"

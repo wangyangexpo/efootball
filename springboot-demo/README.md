@@ -81,14 +81,14 @@ docker compose up -d mysql redis
 
 ```bash
 # 登录阿里云 ACR
-docker login crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com
+docker login crpi-03c6lgrb4dttid0s.cn-shanghai.personal.cr.aliyuncs.com
 
 # 构建并推送镜像（在 springboot-demo 目录下执行）
 docker buildx build \
   --platform linux/amd64 \
-  -t crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/springboot-demo:latest \
+  -t crpi-03c6lgrb4dttid0s.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/docker:latest \
   --push \
-  /Users/alsc/Documents/shared/fullstack/springboot-demo
+  .
 ```
 
 ---
@@ -103,9 +103,6 @@ ssh wangyangexpo@139.224.252.176 "mkdir -p /home/wangyangexpo/springboot-demo/sq
 
 # 拷贝 docker-compose 生产配置
 scp /Users/alsc/Documents/shared/fullstack/springboot-demo/docker-compose.prod.yml wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/docker-compose.yml
-
-# 拷贝数据库初始化 SQL
-scp /Users/alsc/Documents/shared/fullstack/springboot-demo/sql/init.sql wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/sql/init.sql
 ```
 
 ### 更新 SQL 文件到服务器（改了 init.sql 后执行）
