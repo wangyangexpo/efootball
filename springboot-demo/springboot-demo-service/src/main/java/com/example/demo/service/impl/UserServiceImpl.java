@@ -12,10 +12,16 @@ import com.example.demo.service.executor.UserCreateExe;
 import com.example.demo.service.executor.UserQueryExe;
 import com.example.demo.service.executor.UserUpdateExe;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
  * User service implementation
+ * 缓存策略：
+ * - getById：缓存单个用户，key = user::{id}，TTL 10 分钟
+ * - update/delete：操作成功后清除对应缓存
+ * - create/list：不缓存（数据变化频繁，缓存意义不大）
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,7 +45,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 查询单个用户，结果缓存到 Redis
+     * key = "user::{id}"，如：user::1
+     * unless = "#result.data == null" 表示查不到用户时不缓存
+     */
     @Override
+    @Cacheable(value = "user", key = "#id", unless = "#result.data == null")
     public Response<UserDTO> getById(Long id) {
         UserDTO dto = userQueryExe.getById(id);
         if (dto == null) {
@@ -48,7 +60,11 @@ public class UserServiceImpl implements UserService {
         return Response.success(dto);
     }
 
+    /**
+     * 更新用户，成功后清除该用户的缓存
+     */
     @Override
+    @CacheEvict(value = "user", key = "#id")
     public Response<UserDTO> update(Long id, UserUpdateRequest request) {
         try {
             UserDTO dto = userUpdateExe.execute(id, request);
@@ -58,14 +74,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 删除用户，成功后清除该用户的缓存
+     */
     @Override
+    @CacheEvict(value = "user", key = "#id")
     public Response<Void> delete(Long id) {
-        // Check if exists first
         UserDTO dto = userQueryExe.getById(id);
         if (dto == null) {
             return Response.fail(ResultCode.USER_NOT_FOUND.getCode(), ResultCode.USER_NOT_FOUND.getMessage());
         }
-        // Delete (logical delete via MyBatis Plus)
         userQueryExe.deleteById(id);
         return Response.success();
     }
