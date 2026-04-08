@@ -1,35 +1,23 @@
 #!/bin/bash
 # Deployment script for Alibaba Cloud ECS
+# Usage: ./deploy.sh
 
 set -e
 
-APP_NAME="springboot-demo"
-IMAGE_NAME="registry.cn-hangzhou.aliyuncs.com/your-namespace/${APP_NAME}"
-SERVER_IP="${SERVER_IP:-your-server-ip}"
+IMAGE_NAME="crpi-03c6lgrb4dttid0s.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/docker"
+SERVER_IP="139.224.252.176"
+SERVER_USER="wangyangexpo"
 VERSION="${VERSION:-latest}"
 
-echo "=== Building project ==="
-mvn clean package -DskipTests
-
-echo "=== Building Docker image ==="
-docker build -t ${IMAGE_NAME}:${VERSION} .
-
-echo "=== Pushing to Alibaba Cloud Container Registry ==="
-docker push ${IMAGE_NAME}:${VERSION}
+echo "=== Building amd64 image and pushing to Alibaba Cloud Registry ==="
+docker buildx build --platform linux/amd64 \
+  -t ${IMAGE_NAME}:${VERSION} \
+  --push .
 
 echo "=== Deploying to server ${SERVER_IP} ==="
-ssh root@${SERVER_IP} << EOF
-  docker pull ${IMAGE_NAME}:${VERSION}
-  docker stop ${APP_NAME} || true
-  docker rm ${APP_NAME} || true
-  docker run -d \
-    --name ${APP_NAME} \
-    -p 8080:8080 \
-    -e DB_HOST=your-db-host \
-    -e DB_NAME=springboot_demo \
-    -e DB_USER=your-db-user \
-    -e DB_PASS=your-db-password \
-    ${IMAGE_NAME}:${VERSION}
+ssh ${SERVER_USER}@${SERVER_IP} << EOF
+  sudo docker compose -f /home/${SERVER_USER}/springboot-demo/docker-compose.yml pull app
+  sudo docker compose -f /home/${SERVER_USER}/springboot-demo/docker-compose.yml up -d
 EOF
 
 echo "=== Deployment completed ==="
