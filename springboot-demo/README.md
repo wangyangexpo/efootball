@@ -30,53 +30,101 @@ This project follows COLA (Clean Object-oriented Layered Architecture) with 6 mo
 - Maven 3.6+
 - Docker & Docker Compose
 
-### Local Development
+---
 
-1. Start MySQL with Docker:
-   ```bash
-   docker-compose up mysql
-   ```
+## 本地开发调试
 
-2. Build the project:
-   ```bash
-   mvn clean install
-   ```
+> 以下命令需在 `springboot-demo/` 目录下执行
 
-3. Run the application:
-   ```bash
-   cd springboot-demo-start
-   mvn spring-boot:run
-   ```
+### 启动基础服务（MySQL + Redis）
 
-4. Test API:
-   ```bash
-   curl http://localhost:8080/api/users
-   ```
+```bash
+docker compose up -d mysql redis
+```
 
-### Docker Deployment
+### 重新导入数据库数据
 
-1. Build and run all services:
-   ```bash
-   docker-compose up --build
-   ```
+```bash
+docker exec -i demo-mysql mysql -uroot -proot springboot_demo < sql/init.sql
+```
 
-2. Test API:
-   ```bash
-   curl http://localhost:8080/api/users
-   ```
+### 重新构建并启动 app（改了后端代码后执行）
 
-### Alibaba Cloud Deployment
+```bash
+docker compose up --build -d app
+```
 
-1. Set environment variables:
-   ```bash
-   export SERVER_IP=your-server-ip
-   ```
+### 查看 app 启动日志
 
-2. Run deployment script:
-   ```bash
-   chmod +x deploy.sh
-   ./deploy.sh
-   ```
+```bash
+docker compose logs -f app
+```
+
+### 停止所有服务
+
+```bash
+docker compose down
+```
+
+### 重置数据库（清空 volume 重新初始化，会丢失数据）
+
+```bash
+docker compose down -v
+docker compose up -d mysql redis
+```
+
+---
+
+## 打包推送到阿里云 Docker 镜像仓库（ACR）
+
+### 构建跨平台镜像并推送（本地 Mac → 服务器 linux/amd64）
+
+```bash
+# 登录阿里云 ACR
+docker login crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com
+
+# 构建并推送镜像（在 springboot-demo 目录下执行）
+docker buildx build \
+  --platform linux/amd64 \
+  -t crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/springboot-demo:latest \
+  --push \
+  /Users/alsc/Documents/shared/fullstack/springboot-demo
+```
+
+---
+
+## 阿里云服务器重新部署
+
+### SSH 登录服务器
+
+```bash
+ssh root@你的服务器IP
+```
+
+### 在服务器上拉取最新镜像并重启
+
+```bash
+# 拉取最新镜像
+sudo docker compose -f /home/root/springboot-demo/docker-compose.yml pull app
+
+# 重启 app 容器
+sudo docker compose -f /home/root/springboot-demo/docker-compose.yml up -d app
+```
+
+### 查看服务器上的 app 日志
+
+```bash
+sudo docker compose -f /home/root/springboot-demo/docker-compose.yml logs -f app
+```
+
+### 一键部署（本地执行，自动构建推送并通知服务器更新）
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+---
 
 ## API Endpoints
 
