@@ -1,0 +1,21 @@
+#root {
+  width: 100%;
+}
+
+.ant-layout-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+@media (max-width: 768px) {
+  .ant-layout-content {
+    padding: 16px 16px !important;
+  }
+  
+  .ant-layout-header {
+    padding: 0 16px !important;
+  }
+}
