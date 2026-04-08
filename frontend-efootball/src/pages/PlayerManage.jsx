@@ -86,9 +86,18 @@ const PlayerManage = () => {
 
   const handleFilterChange = () => {
     const values = filterForm.getFieldsValue();
+    // 如果输入都为空，给出提示
+    if (!values.id && !values.name) {
+      message.warning('请输入球员ID或球员姓名进行查询');
+      return;
+    }
     setFilters(values);
     setHasSearched(true);
     setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handleEnterPress = () => {
+    handleFilterChange();
   };
 
   const handleResetFilter = () => {
@@ -242,14 +251,17 @@ const PlayerManage = () => {
         background: '#fff',
         padding: 16,
         marginBottom: 16,
-        borderRadius: 8
+        borderRadius: 8,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end'
       }}>
         <Form form={filterForm} layout="inline">
           <Form.Item name="id" style={{ marginBottom: 8 }}>
-            <InputNumber placeholder="球员ID" min={1} style={{ width: 120 }} />
+            <InputNumber placeholder="球员ID" min={1} style={{ width: 120 }} onPressEnter={handleEnterPress} />
           </Form.Item>
           <Form.Item name="name" style={{ marginBottom: 8 }}>
-            <Input placeholder="球员姓名" allowClear style={{ width: 140 }} />
+            <Input placeholder="球员姓名" allowClear style={{ width: 140 }} onPressEnter={handleEnterPress} />
           </Form.Item>
           <Form.Item style={{ marginBottom: 8 }}>
             <Space>
@@ -259,23 +271,34 @@ const PlayerManage = () => {
               <Button icon={<ReloadOutlined />} onClick={handleResetFilter}>
                 重置
               </Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                新增
-              </Button>
             </Space>
           </Form.Item>
         </Form>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          新增
+        </Button>
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={players}
-        rowKey="id"
-        loading={loading}
-        pagination={pagination}
-        onChange={handleTableChange}
-        scroll={{ x: 900 }}
-      />
+      <div style={{
+        background: '#fff',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.08), 0 2px 6px rgba(102, 126, 234, 0.04)',
+        border: '1px solid rgba(102, 126, 234, 0.1)'
+      }}>
+        <Table
+          columns={columns}
+          dataSource={players}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            ...pagination,
+            position: ['bottomRight']
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 900 }}
+        />
+      </div>
 
       <Modal
         open={modalOpen}

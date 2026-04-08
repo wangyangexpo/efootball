@@ -106,7 +106,7 @@ const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
     pageSize: pagination.pageSize || 20,
     total: pagination.total || 0,
     showSizeChanger: true,
-    position: ['bottomCenter']
+    position: ['bottomRight']
   } : false;
 
   return (
