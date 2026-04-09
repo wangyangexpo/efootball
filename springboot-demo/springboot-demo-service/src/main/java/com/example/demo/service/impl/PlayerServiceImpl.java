@@ -13,6 +13,9 @@ import com.example.demo.service.executor.PlayerCreateExe;
 import com.example.demo.service.executor.PlayerQueryExe;
 import com.example.demo.service.executor.PlayerUpdateExe;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,7 +24,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    // 密码的 MD5 值
     private static final String PASSWORD_MD5 = "6b09e658e9143361008d26983cc738ec";
 
     @Autowired
@@ -34,18 +36,21 @@ public class PlayerServiceImpl implements PlayerService {
     private PlayerQueryExe playerQueryExe;
 
     @Override
+    @Cacheable(value = "playerEnums")
     public Response<PlayerEnumsResponse> getEnums() {
         PlayerEnumsResponse enums = playerQueryExe.getEnums();
         return Response.success(enums);
     }
 
     @Override
+    @Cacheable(value = "playerList", key = "T(java.util.Objects).hash(#request.pageNum, #request.pageSize, #request.name, #request.position, #request.status, #request.league, #request.club, #request.country, #request.foot, #request.height, #request.heightOperator, #request.number, #request.id)")
     public Response<PageResult<PlayerDTO>> list(PlayerQueryRequest request) {
         PageResult<PlayerDTO> result = playerQueryExe.list(request);
         return Response.success(result);
     }
 
     @Override
+    @Cacheable(value = "player", key = "#id")
     public Response<PlayerDTO> getById(Long id) {
         PlayerDTO dto = playerQueryExe.getById(id);
         if (dto == null) {
@@ -55,8 +60,11 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "playerList", allEntries = true),
+            @CacheEvict(value = "playerEnums", allEntries = true)
+    })
     public Response<PlayerDTO> create(PlayerCreateRequest request) {
-        // Validate password - 使用 MD5 验证
         if (!PASSWORD_MD5.equals(request.getPassword())) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
@@ -66,8 +74,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "player", key = "#id"),
+            @CacheEvict(value = "playerList", allEntries = true),
+            @CacheEvict(value = "playerEnums", allEntries = true)
+    })
     public Response<PlayerDTO> update(Long id, PlayerUpdateRequest request) {
-        // Validate password - 使用 MD5 验证
         if (!PASSWORD_MD5.equals(request.getPassword())) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
@@ -81,8 +93,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "player", key = "#id"),
+            @CacheEvict(value = "playerList", allEntries = true),
+            @CacheEvict(value = "playerEnums", allEntries = true)
+    })
     public Response<Void> delete(Long id, String password) {
-        // Validate password - 使用 MD5 验证
         if (!PASSWORD_MD5.equals(password)) {
             return Response.fail(ResultCode.PLAYER_PASSWORD_INVALID.getCode(), ResultCode.PLAYER_PASSWORD_INVALID.getMessage());
         }
