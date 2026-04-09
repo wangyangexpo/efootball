@@ -126,7 +126,7 @@ docker compose up -d app
 ### 查看服务器上的 app 日志
 
 ```bash
-sudo docker compose -f /home/root/springboot-demo/docker-compose.yml logs -f app
+sudo docker compose -f /home/wangyangexpo/springboot-demo/docker-compose.yml logs -f app
 ```
 
 ### 一键部署（本地执行，自动构建推送并通知服务器更新）
