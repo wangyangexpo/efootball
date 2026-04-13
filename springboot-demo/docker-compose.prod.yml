@@ -14,8 +14,8 @@ services:
     image: mysql:8.0
     container_name: demo-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: springboot_demo
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3306:3306"
     volumes:
@@ -29,15 +29,15 @@ services:
     restart: always
 
   app:
-    image: crpi-03c6lgrb4dttid0s-vpc.cn-shanghai.personal.cr.aliyuncs.com/docker_wangyang/docker:latest
+    image: ${APP_IMAGE}:${VERSION:-latest}
     container_name: demo-app
     ports:
       - "8080:8080"
     environment:
       DB_HOST: mysql
-      DB_NAME: springboot_demo
-      DB_USER: root
-      DB_PASS: root
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
       SPRING_PROFILES_ACTIVE: dev
       REDIS_HOST: redis
     depends_on:

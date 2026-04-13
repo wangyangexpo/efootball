@@ -14,3 +14,9 @@ target/
 .idea/
 *.iml
 .vscode/
+
+# 敏感配置文件 - 不提交真实密钥
+.env
+springboot-demo/.env
+frontend-efootball/.env.production
+frontend-efootball/.env.local
