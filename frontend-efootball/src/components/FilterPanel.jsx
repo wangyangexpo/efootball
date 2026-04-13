@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Select, InputNumber, Radio, Row, Col, Button, Spin } from "antd";
 import { getPlayerEnums, extractData } from "../api/player";
+import { trackEvent, EVENTS } from "../utils/analytics";
 
 const { Option } = Select;
 
@@ -23,12 +24,45 @@ const FilterPanel = ({ onFilterChange, total }) => {
     setLoading(false);
   };
 
+  // 筛选字段与事件名的映射
+  const fieldEventMap = {
+    position: EVENTS.FILTER_POSITION,
+    league: EVENTS.FILTER_LEAGUE,
+    club: EVENTS.FILTER_CLUB,
+    country: EVENTS.FILTER_COUNTRY,
+    foot: EVENTS.FILTER_FOOT,
+    status: EVENTS.FILTER_STATUS,
+    height: EVENTS.FILTER_HEIGHT,
+  };
+
   const handleValuesChange = (changedValues, allValues) => {
+    // 上报具体筛选字段事件
+    Object.keys(changedValues).forEach((field) => {
+      if (fieldEventMap[field] && changedValues[field] !== undefined) {
+        const eventData = { value: changedValues[field] };
+        // 身高筛选额外携带操作符
+        if (field === 'height') {
+          eventData.operator = allValues.heightOperator || '=';
+        }
+        trackEvent(fieldEventMap[field], eventData);
+      }
+    });
+
+    // 上报查询球员事件（携带所有非空筛选条件）
+    const activeFilters = {};
+    Object.keys(allValues).forEach((key) => {
+      if (allValues[key] !== undefined && allValues[key] !== null) {
+        activeFilters[key] = allValues[key];
+      }
+    });
+    trackEvent(EVENTS.QUERY_PLAYER, activeFilters);
+
     onFilterChange(allValues);
   };
 
   const handleReset = () => {
     form.resetFields();
+    trackEvent(EVENTS.FILTER_RESET);
     onFilterChange({
       position: undefined,
       status: undefined,

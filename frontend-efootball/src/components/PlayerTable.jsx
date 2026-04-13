@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table, Tag, Image } from 'antd';
+import { trackEvent, EVENTS } from '../utils/analytics';
 
 const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
   const columns = [
@@ -95,8 +96,14 @@ const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
       key: 'cardImage',
       width: 100,
       align: 'center',
-      render: (url) => url ? (
-        <Image src={url} width={60} height={80} style={{ objectFit: 'cover' }} />
+      render: (url, record) => url ? (
+        <Image
+          src={url}
+          width={60}
+          height={80}
+          style={{ objectFit: 'cover' }}
+          onClick={() => trackEvent(EVENTS.VIEW_CARD_IMAGE, { name: record.name })}
+        />
       ) : null
     }
   ];
@@ -123,7 +130,10 @@ const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
         rowKey="id"
         loading={loading}
         pagination={tablePagination}
-        onChange={(newPagination) => onPageChange && onPageChange(newPagination)}
+        onChange={(newPagination) => {
+          trackEvent(EVENTS.PAGE_CHANGE, { page: newPagination.current, pageSize: newPagination.pageSize });
+          onPageChange && onPageChange(newPagination);
+        }}
         scroll={{ x: 1200 }}
       />
     </div>

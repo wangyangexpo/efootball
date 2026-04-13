@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getPlayers, getPlayerEnums, createPlayer, updatePlayer, deletePlayer, extractData } from '../api/player';
+import { trackEvent, EVENTS } from '../utils/analytics';
 
 const { Option } = Select;
 
@@ -34,6 +35,11 @@ const PlayerManage = () => {
   // 加载枚举
   useEffect(() => {
     loadEnums();
+  }, []);
+
+  // 管理页面访问埋点（仅 mount 时触发一次）
+  useEffect(() => {
+    trackEvent(EVENTS.MANAGE_PAGE_VISIT);
   }, []);
 
   // 加载球员列表
