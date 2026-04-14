@@ -103,6 +103,15 @@ ssh wangyangexpo@139.224.252.176 "mkdir -p /home/wangyangexpo/springboot-demo/sq
 
 # 拷贝 docker-compose 生产配置
 scp /Users/alsc/Documents/shared/fullstack/springboot-demo/docker-compose.prod.yml wangyangexpo@139.224.252.176:/home/wangyangexpo/springboot-demo/docker-compose.yml
+
+# 本地执行，把 .env 内容复制到剪贴板
+cat /Users/alsc/Documents/shared/fullstack/springboot-demo/.env | pbcopy
+cat /Users/alsc/Documents/shared/fullstack/springboot-demo/docker-compose.prod.yml | pbcopy
+
+# 服务器上执行
+cat > /home/wangyangexpo/springboot-demo/docker-compose.yml << 'EOF'
+# 直接粘贴剪贴板内容，然后输入 EOF 结束
+EOF
 ```
 
 ### 更新 SQL 文件到服务器（改了 init.sql 后执行）
