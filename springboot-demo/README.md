@@ -112,6 +112,9 @@ cat /Users/alsc/Documents/shared/fullstack/springboot-demo/docker-compose.prod.y
 cat > /home/wangyangexpo/springboot-demo/docker-compose.yml << 'EOF'
 # 直接粘贴剪贴板内容，然后输入 EOF 结束
 EOF
+
+# 前端dist推送
+scp -r /Users/alsc/Documents/shared/fullstack/frontend-efootball/dist.zip wangyangexpo@139.224.252.176:~/
 ```
 
 ### 更新 SQL 文件到服务器（改了 init.sql 后执行）
