@@ -12,10 +12,12 @@ import {
   Popconfirm,
   Tag,
   Row,
-  Col
+  Col,
+  Upload,
+  Image
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getPlayers, getPlayerEnums, createPlayer, updatePlayer, deletePlayer, extractData } from '../api/player';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined, UploadOutlined, EyeOutlined, PictureOutlined } from '@ant-design/icons';
+import { getPlayers, getPlayerEnums, createPlayer, updatePlayer, deletePlayer, extractData, uploadPlayerAvatar } from '../api/player';
 import { trackEvent, EVENTS } from '../utils/analytics';
 
 const { Option } = Select;
@@ -409,8 +411,99 @@ const PlayerManage = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="cardImage" label="卡面图片URL">
-                <Input placeholder="请输入图片URL地址" />
+              <Form.Item name="cardImage" label="球员卡面">
+                <Input placeholder="请输入图片URL，或点击右侧按钮上传" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label="球员卡面">
+                <Form.Item noStyle shouldUpdate={(prev, cur) => prev.cardImage !== cur.cardImage}>
+                  {() => {
+                    const cardImageUrl = form.getFieldValue('cardImage');
+                    const uploadAction = async ({ file, onSuccess, onError }) => {
+                      if (!editingPlayer?.id) {
+                        message.warning('新增球员请先点击确定保存后，再编辑卡面');
+                        onError(new Error('请先保存'));
+                        return;
+                      }
+                      try {
+                        const response = await uploadPlayerAvatar(editingPlayer.id, file);
+                        const result = response.data;
+                        if (result.code !== '200') {
+                          throw new Error(result.message || '上传失败');
+                        }
+                        const imageUrl = result.data;
+                        form.setFieldValue('cardImage', imageUrl);
+                        message.success('卡面上传成功，点击确定保存');
+                        onSuccess();
+                      } catch (err) {
+                        message.error('卡面上传失败：' + (err.message || '请重试'));
+                        onError(err);
+                      }
+                    };
+
+                    if (cardImageUrl) {
+                      // 已有卡面：显示图片 + 全屏预览 + 重新上传
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                          <Image
+                            src={cardImageUrl}
+                            width={160}
+                            height={220}
+                            style={{ objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                            preview={{ mask: <><EyeOutlined /> 预览</> }}
+                          />
+                          <Upload
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            maxCount={1}
+                            showUploadList={false}
+                            customRequest={uploadAction}
+                          >
+                            <Button icon={<UploadOutlined />} size="small">重新上传</Button>
+                          </Upload>
+                        </div>
+                      );
+                    }
+
+                    // 无卡面：显示大的点击上传区域
+                    return (
+                      <Upload
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        maxCount={1}
+                        showUploadList={false}
+                        customRequest={uploadAction}
+                      >
+                        <div style={{
+                          width: 160,
+                          height: 220,
+                          border: '1.5px dashed #d9d9d9',
+                          borderRadius: 8,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: editingPlayer?.id ? 'pointer' : 'not-allowed',
+                          background: '#fafafa',
+                          color: '#999',
+                          gap: 8,
+                          transition: 'border-color 0.2s',
+                        }}
+                          onMouseEnter={e => { if (editingPlayer?.id) e.currentTarget.style.borderColor = '#4096ff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#d9d9d9'; }}
+                        >
+                          <PictureOutlined style={{ fontSize: 32, color: '#bbb' }} />
+                          <span style={{ fontSize: 13 }}>
+                            {editingPlayer?.id ? '点击上传卡面' : '保存后可上传卡面'}
+                          </span>
+                          <span style={{ fontSize: 11, color: '#ccc' }}>支持 JPG / PNG / WebP</span>
+                        </div>
+                      </Upload>
+                    );
+                  }}
+                </Form.Item>
               </Form.Item>
             </Col>
           </Row>

@@ -42,4 +42,9 @@ public interface PlayerService {
      * Delete player
      */
     Response<Void> delete(Long id, String password);
+
+    /**
+     * 更新球员头像 URL（内部调用，无需密码校验）
+     */
+    Response<Void> updateCardImage(Long id, String imageUrl);
 }

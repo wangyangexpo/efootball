@@ -6,6 +6,10 @@ spring:
     name: springboot-demo
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
 
 mybatis-plus:
   mapper-locations: classpath*:mappers/**/*.xml

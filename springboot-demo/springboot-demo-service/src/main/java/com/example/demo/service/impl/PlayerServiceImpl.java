@@ -8,7 +8,9 @@ import com.example.demo.api.request.PlayerCreateRequest;
 import com.example.demo.api.request.PlayerUpdateRequest;
 import com.example.demo.common.PageResult;
 import com.example.demo.common.ResultCode;
+import com.example.demo.domain.entity.PlayerEntity;
 import com.example.demo.domain.service.PlayerService;
+import com.example.demo.repository.PlayerRepository;
 import com.example.demo.service.executor.PlayerCreateExe;
 import com.example.demo.service.executor.PlayerQueryExe;
 import com.example.demo.service.executor.PlayerUpdateExe;
@@ -34,6 +36,9 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Autowired
     private PlayerQueryExe playerQueryExe;
+
+    @Autowired
+    private PlayerRepository playerRepository;
 
     @Override
     @Cacheable(value = "playerEnums")
@@ -109,6 +114,21 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         playerQueryExe.deleteById(id);
+        return Response.success();
+    }
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(value = "player", key = "#id"),
+            @CacheEvict(value = "playerList", allEntries = true)
+    })
+    public Response<Void> updateCardImage(Long id, String imageUrl) {
+        PlayerEntity entity = playerRepository.selectById(id);
+        if (entity == null) {
+            return Response.fail(ResultCode.PLAYER_NOT_FOUND.getCode(), ResultCode.PLAYER_NOT_FOUND.getMessage());
+        }
+        entity.setCardImage(imageUrl);
+        playerRepository.updateById(entity);
         return Response.success();
     }
 }

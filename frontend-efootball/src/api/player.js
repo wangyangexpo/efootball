@@ -31,6 +31,15 @@ export const deletePlayer = (id) => api.post(`/player/delete/${id}`, {
   password: PASSWORD_MD5
 });
 
+// 上传球员卡面
+export const uploadPlayerAvatar = (id, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post(`/player/${id}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
 // 响应数据提取辅助函数
 export const extractData = (response) => response.data.data;
 

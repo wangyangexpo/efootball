@@ -20,3 +20,11 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+
+aliyun:
+  oss:
+    endpoint: ${OSS_ENDPOINT:oss-cn-shanghai.aliyuncs.com}
+    access-key-id: ${OSS_ACCESS_KEY_ID}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET}
+    bucket-name: ${OSS_BUCKET_NAME}
+    url-prefix: ${OSS_URL_PREFIX}
