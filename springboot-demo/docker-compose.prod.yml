@@ -40,6 +40,11 @@ services:
       DB_PASS: ${MYSQL_ROOT_PASSWORD}
       SPRING_PROFILES_ACTIVE: dev
       REDIS_HOST: redis
+      OSS_ENDPOINT: ${OSS_ENDPOINT}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
+      OSS_BUCKET_NAME: ${OSS_BUCKET_NAME}
+      OSS_URL_PREFIX: ${OSS_URL_PREFIX}
     depends_on:
       - mysql
       - redis
