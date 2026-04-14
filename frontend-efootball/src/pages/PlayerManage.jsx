@@ -226,6 +226,22 @@ const PlayerManage = () => {
       align: 'center'
     },
     {
+      title: '卡面',
+      dataIndex: 'cardImage',
+      key: 'cardImage',
+      width: 70,
+      align: 'center',
+      render: (cardImage) => cardImage ? (
+        <Image
+          src={cardImage}
+          width={40}
+          height={55}
+          style={{ objectFit: 'cover', borderRadius: 4, cursor: 'pointer' }}
+          preview={{ mask: false }}
+        />
+      ) : <span style={{ color: '#ccc' }}>-</span>
+    },
+    {
       title: '操作',
       key: 'action',
       width: 120,
