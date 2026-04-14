@@ -3,6 +3,7 @@ node_modules/
 *.zip
 dist/
 build/
+package-lock.json
 
 # Maven
 target/
