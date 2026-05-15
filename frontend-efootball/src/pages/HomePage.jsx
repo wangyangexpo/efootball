@@ -3,7 +3,8 @@ import { FloatButton, Popover, message } from 'antd';
 import { MessageOutlined } from '@ant-design/icons';
 import FilterPanel from '../components/FilterPanel';
 import PlayerTable from '../components/PlayerTable';
-import { getPlayers, extractData } from '../api/player';
+import ChangeRequestModal from '../components/ChangeRequestModal';
+import { getPlayers, getPlayerEnums, extractData } from '../api/player';
 import qrcodeImage from '../assets/douyin.jpeg';
 
 const HomePage = () => {
@@ -21,6 +22,15 @@ const HomePage = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
+  const [enums, setEnums] = useState(null);
+  const [proposeModal, setProposeModal] = useState({ open: false, player: null });
+
+  // 加载枚举(用于提议表单的下拉选项)
+  useEffect(() => {
+    getPlayerEnums()
+      .then(res => setEnums(extractData(res)))
+      .catch(() => {});
+  }, []);
 
   const loadPlayers = useCallback(async () => {
     setLoading(true);
@@ -87,6 +97,14 @@ const HomePage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={handlePageChange}
+        onProposeEdit={(player) => setProposeModal({ open: true, player })}
+      />
+      <ChangeRequestModal
+        open={proposeModal.open}
+        player={proposeModal.player}
+        enums={enums}
+        onClose={() => setProposeModal({ open: false, player: null })}
+        onSubmitted={() => {/* 列表不需要刷新,提议在 /changes 显示 */}}
       />
       <Popover
         content={feedbackContent}

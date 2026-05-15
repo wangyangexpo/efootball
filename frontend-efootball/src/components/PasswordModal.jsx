@@ -15,8 +15,11 @@ const PasswordModal = () => {
     setLoading(true);
 
     // 验证密码 - 使用 MD5 对比
-    if (md5(password) === PASSWORD_MD5) {
+    const passwordHash = md5(password);
+    if (passwordHash === PASSWORD_MD5) {
       sessionStorage.setItem('playerManageAuth', 'true');
+      // 给后端鉴权接口(/api/admin/**)用的 MD5
+      sessionStorage.setItem('adminPasswordMd5', passwordHash);
       message.success('验证成功');
       window.location.reload();
     } else {

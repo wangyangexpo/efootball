@@ -844,3 +844,47 @@ INSERT INTO player (name, position, status, number, club, league, country, heigh
 INSERT INTO player (name, position, status, number, club, league, country, height, foot) VALUES ('恩戈洛·坎特', '后腰', '现役', 7, '吉达联合', '沙特联', '法国', 168, '右');
 INSERT INTO player (name, position, status, number, club, league, country, height, foot) VALUES ('史蒂夫·麦克马纳曼', '右前卫', '历史', 8, '皇马', '西甲', '英格兰', 183, '右');
 INSERT INTO player (name, position, status, number, club, league, country, height, foot) VALUES ('伊巴涅斯', '中后卫', '现役', 3, '吉达阿赫利', '沙特联', '巴西', 186, '右');
+
+
+-- ============================================================
+-- 球员数据修改提议系统(Change Request System)
+-- ============================================================
+
+-- 修改提议表
+DROP TABLE IF EXISTS player_change_request;
+CREATE TABLE IF NOT EXISTS player_change_request (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    player_id BIGINT NOT NULL COMMENT '关联球员ID',
+    submitter_id VARCHAR(64) NOT NULL COMMENT '匿名访客 UUID(localStorage)',
+    proposed_name VARCHAR(100) COMMENT '建议-球员姓名',
+    proposed_position VARCHAR(50) COMMENT '建议-位置',
+    proposed_status VARCHAR(20) COMMENT '建议-现役状态',
+    proposed_number INT COMMENT '建议-球衣号码',
+    proposed_club VARCHAR(100) COMMENT '建议-俱乐部',
+    proposed_league VARCHAR(50) COMMENT '建议-联赛',
+    proposed_country VARCHAR(50) COMMENT '建议-国家队',
+    proposed_height INT COMMENT '建议-身高',
+    proposed_foot VARCHAR(10) COMMENT '建议-惯用脚',
+    approve_count INT NOT NULL DEFAULT 0 COMMENT '赞同数(冗余,加速排序)',
+    disapprove_count INT NOT NULL DEFAULT 0 COMMENT '不赞同数',
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态:pending/approved/rejected',
+    reject_reason VARCHAR(255) COMMENT '驳回原因',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted INT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_status_score (status, approve_count DESC, id DESC),
+    INDEX idx_player_submitter (player_id, submitter_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='球员数据修改提议';
+
+-- 投票表
+DROP TABLE IF EXISTS player_change_vote;
+CREATE TABLE IF NOT EXISTS player_change_vote (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    request_id BIGINT NOT NULL COMMENT '关联提议ID',
+    voter_id VARCHAR(64) NOT NULL COMMENT '投票人匿名 UUID',
+    vote_type TINYINT NOT NULL COMMENT '投票类型:1=赞同, -1=不赞同',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_voter (request_id, voter_id),
+    INDEX idx_request (request_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='球员修改提议投票';

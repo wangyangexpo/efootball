@@ -1,8 +1,9 @@
 import React from 'react';
-import { Table, Tag, Image } from 'antd';
+import { Table, Tag, Image, Button } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
 import { trackEvent, EVENTS } from '../utils/analytics';
 
-const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
+const PlayerTable = ({ players, loading, pagination, onPageChange, onProposeEdit }) => {
   const columns = [
     {
       title: '姓名',
@@ -105,6 +106,23 @@ const PlayerTable = ({ players, loading, pagination, onPageChange }) => {
           onClick={() => trackEvent(EVENTS.VIEW_CARD_IMAGE, { name: record.name })}
         />
       ) : null
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 110,
+      fixed: 'right',
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          size="small"
+          type="link"
+          icon={<EditOutlined />}
+          onClick={() => onProposeEdit && onProposeEdit(record)}
+        >
+          提议修改
+        </Button>
+      )
     }
   ];
 
