@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Button, message, Space } from 'antd';
+import { Modal, Form, Select, InputNumber, Button, message, Space } from 'antd';
 import { submitChangeRequest, extractData, extractError } from '../api/changeRequest';
 import { getVisitorId } from '../utils/visitorId';
 
@@ -105,9 +105,15 @@ const ChangeRequestModal = ({ open, player, onClose, onSubmitted, enums }) => {
         onValuesChange={handleValuesChange}
       >
         <Space.Compact block>
-          <Form.Item label="姓名" name="proposedName" style={{ flex: 1, marginRight: 8 }}
-                     rules={[{ required: true, message: '姓名不能为空' }]}>
-            <Input />
+          <Form.Item label="姓名" style={{ flex: 1, marginRight: 8 }}>
+            <div style={{
+              padding: '4px 11px',
+              minHeight: 32,
+              lineHeight: '24px',
+              color: 'rgba(0, 0, 0, 0.88)'
+            }}>
+              {player.name}
+            </div>
           </Form.Item>
           <Form.Item label="位置" name="proposedPosition" style={{ flex: 1 }}>
             <Select allowClear>
@@ -130,7 +136,9 @@ const ChangeRequestModal = ({ open, player, onClose, onSubmitted, enums }) => {
 
         <Space.Compact block>
           <Form.Item label="俱乐部" name="proposedClub" style={{ flex: 1, marginRight: 8 }}>
-            <Input />
+            <Select allowClear showSearch optionFilterProp="children">
+              {(enums?.clubs || []).map(c => <Option key={c} value={c}>{c}</Option>)}
+            </Select>
           </Form.Item>
           <Form.Item label="联赛" name="proposedLeague" style={{ flex: 1 }}>
             <Select allowClear showSearch>
@@ -141,7 +149,9 @@ const ChangeRequestModal = ({ open, player, onClose, onSubmitted, enums }) => {
 
         <Space.Compact block>
           <Form.Item label="国家队" name="proposedCountry" style={{ flex: 1, marginRight: 8 }}>
-            <Input />
+            <Select allowClear showSearch optionFilterProp="children">
+              {(enums?.countries || []).map(c => <Option key={c} value={c}>{c}</Option>)}
+            </Select>
           </Form.Item>
           <Form.Item label="身高(cm)" name="proposedHeight" style={{ flex: 1, marginRight: 8 }}>
             <InputNumber style={{ width: '100%' }} min={140} max={220} />
