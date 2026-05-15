@@ -1,6 +1,5 @@
 import React from 'react';
-import { Table, Tag, Image, Button } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Table, Tag, Button } from 'antd';
 import { trackEvent, EVENTS } from '../utils/analytics';
 
 const PlayerTable = ({ players, loading, pagination, onPageChange, onProposeEdit }) => {
@@ -92,22 +91,6 @@ const PlayerTable = ({ players, loading, pagination, onPageChange, onProposeEdit
       )
     },
     {
-      title: '卡面',
-      dataIndex: 'cardImage',
-      key: 'cardImage',
-      width: 100,
-      align: 'center',
-      render: (url, record) => url ? (
-        <Image
-          src={url}
-          width={60}
-          height={80}
-          style={{ objectFit: 'cover' }}
-          onClick={() => trackEvent(EVENTS.VIEW_CARD_IMAGE, { name: record.name })}
-        />
-      ) : null
-    },
-    {
       title: '操作',
       key: 'action',
       width: 110,
@@ -117,10 +100,9 @@ const PlayerTable = ({ players, loading, pagination, onPageChange, onProposeEdit
         <Button
           size="small"
           type="link"
-          icon={<EditOutlined />}
           onClick={() => onProposeEdit && onProposeEdit(record)}
         >
-          提议修改
+          数据校准
         </Button>
       )
     }

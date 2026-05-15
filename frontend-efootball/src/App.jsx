@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom';
 import { Layout, Typography, Space, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import HomePage from './pages/HomePage';
@@ -19,7 +19,6 @@ const ManageRoute = ({ children }) => {
 };
 
 const NavLinks = () => {
-  const location = useLocation();
   const linkStyle = (active) => ({
     color: active ? '#fff' : 'rgba(255,255,255,0.75)',
     fontWeight: active ? 600 : 400,
@@ -34,13 +33,7 @@ const NavLinks = () => {
   return (
     <Space size={0} style={{ marginLeft: 32 }}>
       <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>首页</NavLink>
-      <NavLink to="/changes" style={({ isActive }) => linkStyle(isActive)}>修改提议</NavLink>
-      <NavLink
-        to="/admin/review"
-        style={linkStyle(location.pathname.startsWith('/admin') || location.pathname === '/manage')}
-      >
-        管理
-      </NavLink>
+      <NavLink to="/changes" style={({ isActive }) => linkStyle(isActive)}>待调整球员</NavLink>
     </Space>
   );
 };

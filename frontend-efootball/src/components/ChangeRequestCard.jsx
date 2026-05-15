@@ -62,7 +62,7 @@ const ChangeRequestCard = ({ data, mode = 'public', onVote, onApprove, onReject,
     setRejectVisible(false);
   };
 
-  const cardImg = data.currentCardImage || DEFAULT_IMG;
+  const cardImg = DEFAULT_IMG;
 
   return (
     <div className="cr-card-wrap" onClick={toggleFlip}>
