@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Empty, Spin, message, Typography } from 'antd';
+
 import ChangeRequestCard from '../components/ChangeRequestCard';
+import ChangeRequestBarChart from '../components/ChangeRequestBarChart';
 import {
   listChangeRequests,
   approveChangeRequest,
@@ -9,7 +11,7 @@ import {
   extractError
 } from '../api/changeRequest';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const PAGE_SIZE = 12;
 
@@ -102,12 +104,9 @@ const AdminReviewPage = () => {
 
   return (
     <div>
-      <Typography style={{ marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>修改提议审批</Title>
-        <Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
-          仅管理员可见。采纳会立即覆盖球员对应字段并刷新缓存。
-        </Paragraph>
-      </Typography>
+      <Title level={4} style={{ margin: '0 0 16px' }}>提议审批</Title>
+
+      <ChangeRequestBarChart items={items} />
 
       {items.length === 0 && !loading ? (
         <Empty description="暂无待审批的修改提议" style={{ marginTop: 80 }} />

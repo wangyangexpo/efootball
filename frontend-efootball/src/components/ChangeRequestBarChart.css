@@ -1,0 +1,137 @@
+.cr-chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08), 0 2px 6px rgba(102, 126, 234, 0.04);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.cr-chart-empty {
+  padding: 40px 20px;
+}
+
+.cr-chart-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cr-chart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.cr-chart-sub {
+  font-size: 12px;
+  color: #999;
+}
+
+.cr-chart-body {
+  display: flex;
+  align-items: stretch;
+  height: 260px;
+}
+
+/* Y 轴刻度 */
+.cr-chart-yaxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 8px;
+  padding-bottom: 56px; /* 给 X 轴名字留位 */
+  font-size: 11px;
+  color: #999;
+  width: 36px;
+}
+
+.cr-chart-ytick {
+  line-height: 1;
+}
+
+/* 绘图区 */
+.cr-chart-plot {
+  position: relative;
+  flex: 1;
+  border-left: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 56px;
+}
+
+/* 网格线 */
+.cr-chart-grid {
+  position: absolute;
+  inset: 0 0 56px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.cr-chart-gridline {
+  border-top: 1px dashed #f0f0f0;
+}
+.cr-chart-gridline:first-child {
+  border-top-color: transparent;
+}
+
+/* 柱条容器 */
+.cr-chart-bars {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0 8px;
+}
+
+.cr-chart-col {
+  flex: 1;
+  min-width: 18px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+}
+
+.cr-chart-bar {
+  width: 100%;
+  max-width: 40px;
+  background: #667eea;
+  border-radius: 4px 4px 0 0;
+  transition: filter 0.2s, transform 0.2s;
+  min-height: 2px;
+}
+
+.cr-chart-col:hover .cr-chart-bar {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.cr-chart-count {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 4px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.cr-chart-name {
+  position: absolute;
+  bottom: -52px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-35deg);
+  transform-origin: top center;
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

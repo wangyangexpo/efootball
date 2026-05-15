@@ -4,7 +4,7 @@ import ChangeRequestCard from '../components/ChangeRequestCard';
 import { listChangeRequests, voteChangeRequest, extractData, extractError } from '../api/changeRequest';
 import { getVisitorId } from '../utils/visitorId';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const PAGE_SIZE = 12;
 
@@ -90,12 +90,7 @@ const ChangeRequestsPage = () => {
 
   return (
     <div>
-      <Typography style={{ marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>球员数据修改提议</Title>
-        <Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
-          点击卡片翻转查看改动详情。赞同数高的提议会优先展示;管理员审批后落库。
-        </Paragraph>
-      </Typography>
+      <Title level={4} style={{ margin: '0 0 16px' }}>待调整球员</Title>
 
       {items.length === 0 && !loading ? (
         <Empty description="暂无待审批的修改提议" style={{ marginTop: 80 }} />
